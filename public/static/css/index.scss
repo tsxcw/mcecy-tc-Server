@@ -1,0 +1,169 @@
+* {
+  margin: 0px;
+  padding: 0px;
+}
+[mt],
+.mt {
+  margin-top: 15px;
+}
+[ml],
+.ml {
+  margin-left: 15px;
+}
+[mr],
+.mr {
+  margin-right: 15px;
+}
+[mb],
+.mb {
+  margin-bottom: 15px;
+}
+/*全局样式变量*/
+:root {
+  /*网站主色*/
+  --main: #4b9fff;
+  /*网站辅助色*/
+  --pink: rgb(245, 129, 150);
+  /*引用背景灰色 dedede 比文字灰色略浅，比背景色深、*/
+  --bg1: #dedede;
+  /*文字灰色  比引用背景色深 比导航色浅*/
+  --bg2: #7a7a7a;
+  /*普通字体颜色*/
+  --font: #363636;
+}
+body {
+  width: 100%;
+  min-width: 905px; //屏幕最小905px,兼容ipad
+}
+@media screen and (min-width: 980px) {
+  body {
+    overflow-x: hidden;
+  }
+}
+@media screen and (max-width: 980px) {
+  body {
+    overflow-x: scrolls;
+  }
+}
+body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: rgb(243, 243, 243);
+}
+body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(207, 207, 207, 0.986);
+}
+
+ul {
+  list-style: none;
+}
+
+//富文本的引号块的样式
+blockquote {
+  display: block;
+  border-left: 8px solid #d0e5f2;
+  padding: 10px 10px;
+  margin: 10px 0;
+  line-height: 1.4;
+  font-size: 100%;
+  background-color: #f1f1f1;
+  box-sizing: border-box;
+}
+
+[cli] {
+  cursor: pointer;
+}
+[hover] {
+  transition: color 100ms;
+  &:hover {
+    color: var(--pink);
+  }
+}
+.grey {
+  //灰色css，用于特殊纪念日，清明节，512汶川大地正纪念日，918事变，12.13南京大屠杀纪念日
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+  -o-filter: grayscale(100%);
+  filter: url("data:image/svg+xml;utf8,#grayscale");
+  filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+  -webkit-filter: grayscale(1);
+}
+
+[loading] {
+  animation: loadingAnm 1s forwards;
+}
+@keyframes loadingAnm {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  z-index: 1;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  text-decoration: none;
+  > img {
+    width: 50px;
+    height: 50px;
+  }
+  > span {
+    margin-top: 5px;
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--main);
+    transition: color 400ms;
+    &:hover {
+      color: var(--pink);
+    }
+  }
+}
+
+.friend {
+  margin: 15px;
+  .top {
+    height: 50px;
+    background: #000;
+  }
+
+  ul {
+    list-style: none;
+    display: flex;
+  }
+
+  .uli {
+    margin: 10px;
+    .list {
+      text-decoration: none;
+      color: var(--main);
+    }
+  }
+
+  .block {
+    background: rgb(241, 241, 241);
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    > p {
+      margin-top: 15px;
+    }
+    > img {
+      height: 50px;
+      border-radius: 100%;
+    }
+  }
+}

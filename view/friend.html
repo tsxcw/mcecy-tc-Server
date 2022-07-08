@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>友情链接</title>
+    <link rel="icon" href="/logo.png" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <link href="https://api.mcecy.com/static/css/index.css" rel='stylesheet' />
+</head>
+
+<body>
+    <nav class="top">
+        <a class="logo" href="/" title="创次元首页">
+            <img src="https://s4.ax1x.com/2021/12/31/Tfshad.png" />
+            <span>创次元</span>
+        </a>
+    </nav>
+    <div class="friend">
+        <ul>
+            {foreach $list as $i}
+            <li class="uli">
+                <a href="{$i['href']}" class="list">
+                    <div class="block">
+                        <img src="{$i['logo']}" />
+                        <p hover> {$i['name']}</p>
+                    </div>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</body>
+<style>
+</style>
+
+</html>

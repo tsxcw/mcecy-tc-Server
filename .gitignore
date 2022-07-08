@@ -1,0 +1,9 @@
+.idea
+.vscode
+*.log
+upload
+runtime
+storage
+.user.ini
+.env
+node_modules

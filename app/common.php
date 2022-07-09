@@ -24,9 +24,24 @@ header('Access-Control-Allow-Headers:*');
 function userCheck($over = false)
 {
     $token = Request::header("X-Token", false);
-    if ($token) {
+    $id = Request::header("X-Id", false);
+    if ($token && $id) {
         $result =  UserToken::withjoin('user')->where("token", $token)->find();
         if ($result) {
+            if ($result['user']['uid'] != $id) {
+                over(['code' => 888]);
+                return;
+            }
+            if ($result['user']['status'] == '2') {
+                over(['code' => 888]);
+                return;
+            }
+            $day7 = time() - (60 * 60 * 24 * 7);
+            if ($day7 > $result['time']) { //如果当前时间-往前推7天大于上次登录时间则toekn过期
+                UserToken::where('time', '<', $day7)->delete();
+                over(['code' => 888]);
+                return;
+            }
             return $result['user'];
         }
     }
@@ -103,6 +118,32 @@ function isMobile($mobile)
     return preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $mobile) ? true : false;
 }
 
+
+/**
+ * 正则表达式验证email格式
+ *
+ * @param string $str    所要验证的邮箱地址
+ * @return boolean
+ */
+function isEmail($str)
+{
+    if (!$str) {
+        return false;
+    }
+    return preg_match('#[a-z0-9&\-_.]+@[\w\-_]+([\w\-.]+)?\.[\w\-]+#is', $str) ? true : false;
+}
+
+//检查一个账号是邮箱还是手机号码
+function check_account_type($account)
+{
+    if (isEmail($account)) {
+        return "mail";
+    }
+    if (isMobile($account)) {
+        return "mobile";
+    }
+    return false;
+}
 /**错误信息打包 */
 function error($code, $msg, $info = [])
 {
@@ -156,4 +197,18 @@ function arr_to_obj($arr, $key)
         $userTmp[$value[$key]] = $value;
     }
     return $userTmp;
+}
+
+
+//判断并且创建文件夹
+function is_exist_dir($dirname)
+{
+    $arr = explode('/', $dirname);
+    $endString = $arr[count($arr) - 1];
+    if (preg_match("/\./", $endString)) {
+        $dirname =  preg_replace("/$endString/", "", $dirname);
+    }
+    if (!is_dir($dirname)) {
+        mkdir($dirname, 0755, true);
+    }
 }

@@ -1,6 +1,18 @@
+<!--
+ * @Author: tushan
+ * @Date: 2022-07-09 11:43:13
+ * @LastEditors: tushan
+ * @LastEditTime: 2022-07-09 11:46:38
+ * @Description: 
+-->
 # 创次元图床端API程序
 
 ****
+
+
+前端演示地址 https://tc.png.ink    账号：12345  密码 123456
+
+后台管理演示地址 https://admin.png.ink   账号：admin  密码 123456
 
 创次元前端开源地址 https://github.com/tsxcw/mcecy-tc-Client
 

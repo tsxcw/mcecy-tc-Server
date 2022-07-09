@@ -1,10 +1,18 @@
 <?php
+/*
+ * @Author: tushan
+ * @Date: 2022-05-22 14:24:43
+ * @LastEditors: tushan
+ * @LastEditTime: 2022-05-22 14:27:49
+ * @Description: 
+ */
 
 namespace app\api\controller;
 
 use app\model\Image as ModelImage;
 use app\model\User;
-use extend\cos\CosTencent;
+use app\model\UserInfo;
+use extend\FileSystem;
 
 class Image
 {
@@ -15,6 +23,22 @@ class Image
         $list = ModelImage::where("uid", $user['uid'])->order("addtime", "desc")->paginate(20);
         return success(['list' => $list]);
     }
+    function reset_info($uid)
+    {
+        $size = ModelImage::where("uid", $uid)->field("id,uid,size")->sum('size');
+        $num = ModelImage::where("uid", $uid)->field('id,uid')->count("id");
+        $info = UserInfo::find($uid);
+        $info->use_store = $size; //文件容量
+        $info->files_num = $num; //数量
+        $info->save();
+    }
+    function setDec_info($uid, $size)
+    {
+        $info = UserInfo::find($uid);
+        $info->files_num -= 1;
+        $info->use_store -= $size;
+        return $info->save();
+    }
     function del()
     {
         $user = userCheck();
@@ -22,7 +46,8 @@ class Image
         $file = ModelImage::find($id);
         if ($file && $file['uid'] == $user['uid']) {
             $file->delete();
-            CosTencent::unlink($file['path']);
+            FileSystem::delFile($file['path']);
+            $this->setDec_info($user['uid'], $file->size);
             return success("删除成功");
         } else {
             return error(401, "删除失败");
@@ -51,15 +76,22 @@ class Image
     {
         $list = ModelImage::where("pron", ">", 80)->select();
         foreach ($list as $key => $value) {
-            $info  = ModelImage::where("id", $value['id'])->delete();
-            CosTencent::unlink($value['path']);
+            ModelImage::where("id", $value['id'])->delete();
+            FileSystem::delFile($value['path']);
+            $this->setDec_info($value['uid'], $value['size']);
         }
     }
     function database()
     {
         $user = userCheck();
-        $num = ModelImage::where("uid", $user['uid'])->field("id")->Cache(60)->count("id");
-        $size = ModelImage::where("uid", $user['uid'])->field("size,id")->Cache(60)->sum('size');
-        return success(['size' => $size, "num" => $num]);
+        $info = UserInfo::find($user['uid']);
+        return success(["info" => $info]);
+    }
+    function reset()
+    {
+        $list = User::select();
+        foreach ($list as $key => $value) {
+            $this->reset_info($value['uid']);
+        }
     }
 }

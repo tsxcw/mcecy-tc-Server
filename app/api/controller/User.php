@@ -4,8 +4,10 @@ namespace app\api\controller;
 
 use think\facade\Db;
 use app\BaseController;
+use app\model\Settings;
 use app\model\Subscription;
 use app\model\User as ModelUser;
+use app\model\UserInfo;
 use app\model\UserToken;
 use think\cache\driver\Redis;
 use think\facade\Cache;
@@ -29,6 +31,26 @@ class User extends BaseController
             }
         }
     }
+    function create_info($uid)
+    {
+        $info = UserInfo::find($uid);
+        $total_store = Settings::find("default_storage_size");
+        if (empty($info)) {
+            $info = new Userinfo;
+            $info->uid = $uid;
+            $info->files_num = 0;
+            $info->use_store = 0;
+            $info->total_store = (float)$total_store->value;
+            return $info->save();
+        }
+    }
+    function all()
+    {
+        $list = ModelUser::select();
+        foreach ($list as $key => $value) {
+            $this->create_info($value['uid']);
+        }
+    }
     /**
      * 用户登录
      */
@@ -37,7 +59,7 @@ class User extends BaseController
         $user = getReq("user", 400, "您好没有输入账号呢");
         $password = getReq("password", 401, "请输入密码呢");
         $md5_password = md5($password);
-        $result = ModelUser::where("mobile", $user)->field('avatar,status,name,uid,isvip,lasttime,tips,sex,password')->find();
+        $result = ModelUser::where("mobile", $user)->field('status,name,uid,isvip,lasttime,password')->find();
         if ($result) {
             if ($result["password"] == $md5_password) {
                 if ($result['status'] == 2) {
@@ -51,6 +73,7 @@ class User extends BaseController
                 ModelUser::where("uid", $result['uid'])->update(["lasttime" => time()]);
                 $setToken = UserToken::insert(["uid" => $result["uid"], "token" => $token, "time" => time(), "ip" => Request::ip()]);
                 $result["token"] = $token;
+                $this->create_info($result['uid']);
                 return success("登录成功", ['data' => $result]);
             } else {
                 return error(10017, "账号或密码错误");
@@ -72,17 +95,18 @@ class User extends BaseController
             if ($checkUser) {
                 //如果存在就登录；否则就注册一个；
                 $token = $this->generate_token();
+                ModelUser::where("uid", $checkUser["uid"])->update(["lasttime" => time()]);
                 $setToken =  UserToken::insert(["uid" => $checkUser["uid"], "token" => $token, "time" => time(), "ip" => Request::ip()]);
                 $checkUser["token"] = $token;
                 unset($checkUser['password']);
                 Sms::codeDestroy($user, $code); //销毁验证码
+                $this->create_info($checkUser['uid']);
                 return success("登录成功", ["data" =>  $checkUser]);
             } else {
                 $info = [
                     "name" => "用户" . time(),
                     "mobile" => $user,
                     "password" => md5("tushan"),
-                    "avatar" => "https://s2.loli.net/2021/12/04/3Onw9RXc7PEtNyH.png",
                     "isvip" => 0,
                     "createtime" => time()
                 ];
@@ -93,6 +117,7 @@ class User extends BaseController
                 $search["token"] = $token;
                 $search["iszhuce"] = true;
                 Sms::codeDestroy($user, $code); //销毁验证码
+                $this->create_info($add_id);
                 return success("注册用户", ["data" => $search]);
             }
         } else {
@@ -139,6 +164,22 @@ class User extends BaseController
         }
     }
     /**
+     * 修改密码
+     */
+    public function resetPass()
+    {
+        $user = userCheck();
+        $pass = getReq("password", 404, ' 缺少密码');
+        if (strlen($pass) < 6) {
+            return error(401, '密码长度过短');
+        }
+        $user = ModelUser::field("password,uid")->find($user['uid']);
+        $user->password = md5($pass);
+        $user->save();
+        UserToken::where("uid",$user['uid'])->delete();
+        return success("修改成功");
+    }
+    /**
      * 获取用户信息
      */
     public function info()
@@ -147,21 +188,6 @@ class User extends BaseController
             unset($info['mobile']);
             unset($info['password']);
             return json(["code" => "200", "data" => $info]);
-        }
-    }
-    /**
-     * 修改头像
-     */
-    public function avatar()
-    {
-        $avatar = getReq("avatar", 404, '缺少头像地址');
-        if ($user = userCheck()) {
-            $result = ModelUser::where("uid", $user['uid'])->update(["avatar" => $avatar]);
-            if ($result) {
-                return success("修改成功", ['url' => $avatar]);
-            } else {
-                return error(404, "修改失败");
-            }
         }
     }
     /**

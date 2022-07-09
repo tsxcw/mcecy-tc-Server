@@ -13,11 +13,12 @@
 // | Workerman设置 仅对 php think worker:server 指令有效
 // +----------------------------------------------------------------------
 use app\model\Banner;
+use Intervention\Image\ImageManagerStatic as Image;
 return [
     // 扩展自身需要的配置
     'protocol'       => 'http', // 协议 支持 tcp udp unix http websocket text
     'host'           => '0.0.0.0', // 监听地址
-    'port'           => 90, // 监听端口
+    'port'           => 9007, // 监听端口
     'socket'         => '', // 完整监听地址
     'context'        => [], // socket 上下文选项
     'worker_class'   => '', // 自定义Workerman服务类名 支持数组定义多个服务
@@ -31,24 +32,19 @@ return [
     // 支持事件回调
     // onWorkerStart
     'onWorkerStart'  => function ($worker) {
-
     },
     // onWorkerReload
     'onWorkerReload' => function ($worker) {
-
     },
     // onConnect
     'onConnect'      => function ($connection) {
-
     },
     // onMessage
     'onMessage'      => function ($connection, $data) {
-        $list = Banner::select();
-        $connection->send(json_encode($list));
+        $connection->send("ok");
     },
     // onClose
     'onClose'        => function ($connection) {
-
     },
     // onError
     'onError'        => function ($connection, $code, $msg) {

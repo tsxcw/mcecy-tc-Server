@@ -11,61 +11,52 @@
 namespace app\api\controller;
 
 use app\BaseController;
-use app\model\Article;
-use app\model\Banner;
-use app\model\Section;
 use think\facade\Db;
+use app\model\Report;
+use app\model\Settings;
 
 class Index extends BaseController
 {
-    /**
-     * 首页展示列表
-     */
-    public function show()
+    function report_add()
     {
-        $section = Section::where("status", 1)->column('sid');
-        $list = Article::with(['section','author'])->where("canshow", 1)->whereIn('sid', $section)->cache(30)->paginate(50);
-        return success(["list" => $list]);
-    }
-    /**首页banner */
-    public function banner()
-    {
-        $list = Banner::where("status", 1)->order("sort")->select();
-        return success(['list' => $list]);
-    }
-    /**ssr seo接口 */
-    public function seo_index()
-    {
-        $result = Article::with(['user'])->where("canshow", 1)->limit(100)->select();
-        return success(['list' => $result]);
-    }
-    /**首页顶部推荐 */
-    public function hot_top()
-    {
-        $list = Article::withoutfield('content')->order("like", "desc")->where("canshow", 1)->limit(8)->select();
-        return success(["list" => $list]);
-    }
-    /**搜索 */
-    public function search_title()
-    {
-        $search = getReq("search");
-        $result = Article::where("title", 'like', "%$search%")->where("canshow", 1)->limit(8)->field('wid,title as value,look')->order("look", "desc")->select();
-        return success(['list' => $result]);
-    }
-    /**搜索内容 */
-    public function search_result()
-    {
-        $search = getReq("search", false);
-        if (!$search) {
-            return success(['list' => []]);
+        $user = userCheck();
+        $annex_img = getReq("annex_img", []);
+        if (!is_array($annex_img)) {
+            $annex_img = [];
         }
-        $result = Article::with(['author', 'section'])->where("title", 'like', "%$search%")->where("canshow", 1)->order("look", "desc")->paginate(50);
-        return success(['list' => $result]);
+        $imgArr = $annex_img;
+        $text = getReq("context", 400, '请阐述问题或建议');
+        if (strlen($text) > 1000 || count($imgArr) > 4) {
+            return error('401', '非法数据');
+        }
+        $rpt = new Report;
+        $rpt->context = $text;
+        $rpt->link = getReq("link", '');
+        $rpt->annex_img = $imgArr;
+        $rpt->uid = $user['uid'];
+        $rpt->addtime = date("Y-m-d H:i:s");
+        $state = $rpt->save();
+        return $state ? success("提交成功") : error(403, '提交失败,请重新尝试');
+    }
+    function report_history()
+    {
+        $user = userCheck();
+        $list = Report::where("uid", $user['uid'])->order("id", "desc")->paginate(getReq("limit(50)"));
+        return success(['list' => $list]);
     }
     /**友情链接 */
     public function friend()
     {
         $list = Db::table("friend_link")->select();
         return success(['info' => $list]);
+    }
+    public function settings()
+    {
+        $dict = Settings::where('key', 'in', ['app_name', 'app_logo', 'bah', 'registerType'])->select();
+        return success($dict);
+    }
+    public function run()
+    {
+        return 'ok';
     }
 }

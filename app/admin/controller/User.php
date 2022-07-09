@@ -20,21 +20,12 @@ class User
      */
     function user_list()
     {
-        /**获取全选角色列表并且将id作为数组坐标 */
-        $role = Db::table("admin_role")->select();
-        $role_tmp = array();
-        foreach ($role as $key => $value) {
-            $role_tmp[$value['rid']] = $value;
+        $admin = checkToken();
+        if ($admin['role'] !== 1) {
+            return error('401', '无权限');
         }
-        //获取管理员列表
         $list = AdminUser::order("aid", "desc")->limit(0, 30)->select();
-        $list_tmp = array();
-        foreach ($list as $key => $value) {
-            //将自己的权限id当作角色数组坐标获取自己的权限相关信息
-            $value['role_info'] = $role_tmp[$value['role']];
-            array_push($list_tmp, $value);
-        }
-        return json(["code" => 200, "list" => $list_tmp]);
+        return json(["code" => 200, "list" => $list]);
     }
     /**管理员登录 */
     function login()
@@ -62,7 +53,7 @@ class User
         unset($admin['password']);
         $data = [
             "roles" => [
-                'admin'
+                $admin['role']
             ],
             "introduction" => 'I am a super administrator',
             "avatar" => $admin['avatar'],
@@ -76,18 +67,16 @@ class User
     /**管理员退出登录 */
     function login_out()
     {
+        $admin = checkToken();
         return json(["code" => 200, "msg" => "退出成功"]); //此处只需要返回一个200的状态吗即可
-    }
-    /**角色列表 */
-    function role()
-    {
-        $list = Db::table('admin_role')->select();
-        return json(['code' => 200, 'list' => $list]);
     }
     /**给管理员设置角色组 */
     function set_admin_role()
     {
-        checkToken();
+        $user =  checkToken();
+        if ($user['role'] !== 1) {
+            return error('401', '无权限');
+        }
         $info = getReq("info", 401, "参数错误");
         if (getReq("type", false) == 'add') {
             $info['addtime'] = date("Y-m-d H:i:s");
@@ -99,7 +88,7 @@ class User
             }
         } else {
             $aid = getReq("aid", 401, '缺少aid');
-            $state = AdminUser::where('uid', $aid)->update($info);
+            $state = AdminUser::where('aid', $aid)->update($info);
         }
 
         if ($state) {
@@ -111,7 +100,10 @@ class User
     /**删除某个管理员账号 */
     function admin_delete()
     {
-        checkToken();
+        $user =  checkToken();
+        if ($user['role'] !== 1) {
+            return error('401', '无权限');
+        }
         $aid = getReq("aid", 401, '缺少aid');
         $state = AdminUser::where('aid', $aid)->delete();
         if ($state) {
@@ -119,5 +111,13 @@ class User
         } else {
             return json(['code' => 401, 'msg' => '删除失败']);
         }
+    }
+    //修改密码
+    function resetpass()
+    {
+        $usre = checkToken();
+        $newPass = getReq("newPass");
+        $stste = AdminUser::update(["password" => md5($newPass)], ['aid' => $usre['aid']]);
+        return success('修改成功');
     }
 }

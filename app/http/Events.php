@@ -4,7 +4,7 @@
  * @Date: 2021-12-13 16:09:51
  * @LastEditTime: 2021-12-15 18:41:07
  * @LastEditors: Please set LastEditors
- * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: websocket
  * @FilePath: /admin/app/http/Events.php
  */
 
@@ -15,6 +15,7 @@ use GatewayWorker\Lib\Gateway;
 use think\facade\Cache;
 use Workerman\Worker;
 use think\worker\Application;
+use Workerman\Lib\Timer;
 
 /**
  * Worker 命令行服务类
@@ -34,7 +35,6 @@ class Events
         $app = new Application;
         $app->initialize();
     }
-
     /**
      * onConnect 事件回调
      * 当客户端连接上gateway进程时(TCP三次握手完毕时)触发
@@ -97,7 +97,7 @@ class Events
         if ($info['type'] == 'pong') {
             //没任务
             self::sendOne($client_id, ['code' => 1, 'cli_id' => $client_id]);
-        }
+        }   
         if ($info['type'] == 'msg') {
             //逻辑处理
             self::sendOne($info['to_id'], $info['text']);

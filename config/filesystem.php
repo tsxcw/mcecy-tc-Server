@@ -26,6 +26,12 @@ return [
             // 可见性
             'visibility' => 'public',
         ],
+        'image'=>[
+            "type"=>'local',
+            'root'=>env("FileSystem.root"),
+            'url'=>"/",
+            'visibility'=>'public'
+        ]
         // 更多的磁盘配置信息
     ],
 ];

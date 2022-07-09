@@ -39,7 +39,6 @@ class File
         if ($saveName) {
             $filePath = env("app.cdn") . $saveName;
             $localPath = env("FileSystem.root") . '/' . $saveName;
-            CosTencent::upload($saveName, $localPath); //腾讯云储存COS上传文件
             return success("上传成功", ["url" => $filePath]);
         } else {
             return error(401, "文件格式不符合要求", ["can_type" => $canArr]);

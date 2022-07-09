@@ -49,7 +49,7 @@ class File
         if ($saveName) {
             $filePath = env("app.cdn") . $saveName;
             $localPath = env("FileSystem.root") . '/' . $saveName;
-            CosTencent::upload($saveName, $localPath); //腾讯云储存COS上传文件
+            self::cosup($saveName, $localPath);
             $info = array(
                 "addtime" => date('Y-m-d H:i:s'),
                 "path" => $filePath,

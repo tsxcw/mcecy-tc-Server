@@ -8,5 +8,4 @@ storage
 .env
 node_modules
 vendor/workerman/_www_wwwroot_mcecyServer_think.pid
-vendor
 imgs

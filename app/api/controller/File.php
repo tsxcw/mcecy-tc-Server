@@ -47,7 +47,7 @@ class File
             }
         }
         if ($saveName) {
-            $filePath = env("app.cdn") . $saveName;
+            $filePath = env("app.cdn") .'/'. $saveName;
             $localPath = env("FileSystem.root") . '/' . $saveName;
             self::cosup($saveName, $localPath);
             $info = array(

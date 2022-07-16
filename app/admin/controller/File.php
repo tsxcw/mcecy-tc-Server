@@ -12,7 +12,7 @@ namespace app\admin\controller;
 use think\facade\Request;
 use \think\facade\Filesystem;
 use extend\cos\CosTencent;
-
+use extend\FileSystem as FileCos;
 class File
 {
     /**后台文件上传 */
@@ -37,8 +37,9 @@ class File
             }
         }
         if ($saveName) {
-            $filePath = env("app.cdn") . $saveName;
+            $filePath = env("app.cdn") .'/'. $saveName;
             $localPath = env("FileSystem.root") . '/' . $saveName;
+            FileCos::cosup($saveName,$localPath);
             return success("上传成功", ["url" => $filePath]);
         } else {
             return error(401, "文件格式不符合要求", ["can_type" => $canArr]);

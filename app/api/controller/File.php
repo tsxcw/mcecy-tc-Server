@@ -18,7 +18,7 @@ use think\facade\Request;
 use \think\facade\Filesystem;
 use extend\cos\CosTencent;
 use Intervention\Image\ImageManagerStatic as ImageManage;
-
+use extend\FileSystem as FileCos;
 class File
 {
     /**
@@ -49,7 +49,7 @@ class File
         if ($saveName) {
             $filePath = env("app.cdn") .'/'. $saveName;
             $localPath = env("FileSystem.root") . '/' . $saveName;
-            self::cosup($saveName, $localPath);
+            FileCos::cosup($saveName, $localPath);
             $info = array(
                 "addtime" => date('Y-m-d H:i:s'),
                 "path" => $filePath,
@@ -134,13 +134,13 @@ class File
                 if ($is_exist) {
                     return success('上传成功', $is_exist);
                 }
-                self::cosup("min/" . $saveName, $localMinPath);
+                FileCos::cosup("min/" . $saveName, $localMinPath);
             }
         }
         if ($saveName) {
             $filePath = $saveName;
             $localPath = env("FileSystem.root") . '/' . $saveName;
-            self::cosup($saveName, $localPath); //腾讯云储存COS上传文件
+            FileCos::cosup($saveName, $localPath); //腾讯云储存COS上传文件
             $id = uniqid('i');
             $info = array(
                 "addtime" => date('Y-m-d H:i:s'),
@@ -171,13 +171,6 @@ class File
             return success("上传成功", $info);
         } else {
             return error(401, "文件格式不符合要求", ["can_type" => $canArr]);
-        }
-    }
-    //cos上传
-    protected static function cosup($key, $path)
-    { //如果开启cos上传则上传至cos，会产生cos费用
-        if (Settings::find("uploads_cos")->value == '1') {
-            CosTencent::upload($key, $path); //腾讯云储存COS上传文件
         }
     }
     //图片鉴黄
